@@ -2,6 +2,7 @@ import numpy as np
 import re
 from Document import Document
 import QueryProcessing as qproc
+import datetime
 
 
 class Retrieval:
@@ -10,7 +11,7 @@ class Retrieval:
         self.create_incidence_matrix()
 
     def read_file_and_make_docs(self, filename):
-        corpus = open(filename, encoding='utf-8')
+        corpus = open(filename)
         corpus = corpus.read()
 
         regex = r"<TITLE>([^<]+)<.+>\s+<.+>([^<]+)"
@@ -27,7 +28,6 @@ class Retrieval:
         matches = re.finditer(regex, stopwords)
 
         stopwords = [match.group(1) for match in matches]
-        print(len(stopwords))
         
         word_all_documents = []
         
@@ -48,6 +48,8 @@ class Retrieval:
 
 
     def retrieve_term(self, term):
+        print(term)
+        print(self.inc_mat[term])
         return self.inc_mat[term]
 
 
@@ -59,7 +61,7 @@ class Retrieval:
             if token not in operator:
                 operand_stack.append(self.retrieve_term(token))
             elif token == 'not':
-                operand_stack.append(negate(operand_stack.pop()))
+                operand_stack.append(self.negate(operand_stack.pop()))
             else:
                 operand2 = operand_stack.pop()
                 operand1 = operand_stack.pop()
@@ -76,8 +78,8 @@ class Retrieval:
             return np.unique(np.concatenate((res1, res2)))
 
 
-    def negate(self, docs, res):
-        idx = [i for i, d in enumerate(docs)]
+    def negate(self, res):
+        idx = [i for i, d in enumerate(self.docs)]
         return np.setdiff1d(idx, res)
 
 
